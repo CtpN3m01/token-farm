@@ -72,7 +72,7 @@ Incluye funciones para **depositar**, **retirar todo el LP**, **recalcular/actua
 
 ```bash
 # Clonar el repositorio
-git clone <tu-repo-url>
+git clone https://github.com/CtpN3m01/token-farm.git
 cd token-farm
 
 # Instalar dependencias
@@ -110,70 +110,6 @@ npx hardhat run scripts/deploy.js --network localhost
 # LP Token   : 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512  
 # Token Farm : 0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
 # ==================================================
-```
-
-### Configuración Post-Deploy
-
-El script automáticamente:
-1. Despliega `DAppToken` con el deployer como owner inicial
-2. Despliega `LPToken` con el deployer como owner inicial  
-3. Despliega `TokenFarm` conectado a ambos tokens
-4. **Transfiere ownership** del `DAppToken` al `TokenFarm` (crucial para que pueda mintear recompensas)
-
----
-
-## 🎮 Uso del Sistema
-
-### Consola Interactiva
-
-```bash
-npx hardhat console
-```
-
-### Ejemplo Completo de Uso
-
-```javascript
-// 1. Obtener contratos (usar direcciones del deployment)
-const tokenFarm = await ethers.getContractAt("TokenFarm", "0x9fe46...");
-const lpToken = await ethers.getContractAt("LPToken", "0xe7f17...");
-const dappToken = await ethers.getContractAt("DAppToken", "0x5fbdb...");
-
-// 2. Obtener cuentas
-const [owner, user1, user2] = await ethers.getSigners();
-
-// 3. Setup inicial (como owner)
-// Mintear LP tokens para usuarios
-await lpToken.mint(user1.address, ethers.parseEther("1000"));
-await lpToken.mint(user2.address, ethers.parseEther("500"));
-
-// 4. Usuario 1 hace staking
-await lpToken.connect(user1).approve(tokenFarm.address, ethers.parseEther("100"));
-await tokenFarm.connect(user1).deposit(ethers.parseEther("100"));
-
-// 5. Usuario 2 hace staking
-await lpToken.connect(user2).approve(tokenFarm.address, ethers.parseEther("50"));
-await tokenFarm.connect(user2).deposit(ethers.parseEther("50"));
-
-// 6. Verificar estado
-const user1Info = await tokenFarm.users(user1.address);
-console.log("User1 staking:", ethers.formatEther(user1Info.stakingBalance));
-
-const totalStaking = await tokenFarm.totalStakingBalance();
-console.log("Total staking:", ethers.formatEther(totalStaking));
-
-// 7. Simular paso del tiempo y generar recompensas
-// (en Hardhat puedes minar bloques manualmente)
-for(let i = 0; i < 10; i++) {
-  await network.provider.send("evm_mine");
-}
-
-// 8. Reclamar recompensas
-await tokenFarm.connect(user1).claimRewards();
-const user1DappBalance = await dappToken.balanceOf(user1.address);
-console.log("User1 DAPP earned:", ethers.formatEther(user1DappBalance));
-
-// 9. Retirar staking
-await tokenFarm.connect(user1).withdraw();
 ```
 
 ---
