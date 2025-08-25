@@ -100,7 +100,7 @@ npx hardhat compile
 npx hardhat compile
 
 # Desplegar en red local
-npx hardhat run scripts/deploy.js
+npx hardhat run scripts/deploy.js --network localhost
 
 # Resultado esperado:
 # 🎉 DEPLOYMENT COMPLETE!
